@@ -1,0 +1,81 @@
+PRUEBA TEÓRICA
+
+1. Está recibiendo dos flujos de datos de dos sensores de temperatura (2 observables que devuelven números enteros), ¿qué operador de RxJS utilizaría
+para recibir estos dos datos en la misma suscripción?
+
+Respuesta:Utilizar combiLatest
+Este operador se utiliza mejor cuando se tienen varios observables de larga duración que dependen entre sí para algún cálculo o determinación. 
+Tomar en cuenta que combineLatestno emitirá un valor inicial hasta que cada observable emita al menos un valor . 
+Código:
+import { combineLatest, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
+const obs1 = of(1).pipe(delay(1000));
+const obs2 = of(2).pipe(delay(500));
+
+combineLatest([obs1, obs2]).subscribe(console.log);
+
+
+
+2.Si tiene dos llamadas al servidor y la segunda llamada depende de la primera,¿cómo manejaría con RxJS esta secuencia de llamadas?
+Respuesta:
+Utilizar UswitchMap
+El operador switchMap se utiliza para encadenar observables. Si la primera llamada se realiza y, mientras se espera la respuesta, llega un nuevo valor (como una nueva solicitud), switchMap cancela la solicitud anterior y hace la nueva.
+Código:
+import { of } from 'rxjs';
+import { delay, mergeMap } from 'rxjs/operators';
+
+const first = of(1).pipe(delay(1000));
+const second = of(11).pipe(delay(500));
+
+first.pipe(
+  mergeMap(() => second)
+).subscribe(() => console.log('finished'));
+
+
+
+
+3.Tengo en un servidor un archivo de texto que está en minúscula y ocupa 2GB en el disco duro, pero le solicitan que todo el archivo debe ser pasado a
+mayúsculas, ¿cómo lo haría?
+Respuesta:
+Se puede realizar utilizando flujos de datos, y una de las maneras de hacer esto de manera eficiente es con RxJS (Reactive Extensions for JavaScript).
+Código:
+const fs = require('fs');
+
+async function logChunks(readable, writeStream) {
+  try {
+    for await (const chunk of readable) {
+      writeStream.write(chunk.toUpperCase());
+    }
+    console.log('Conversión terminada');
+  } catch (error) {
+    console.error('Error al procesar el archivo:', error);
+  } finally {
+    writeStream.end();
+  }
+}
+
+const readable = fs.createReadStream('file1.txt', { encoding: 'utf8' });
+const writeStream = fs.createWriteStream('file2.txt', { encoding: 'utf8' });
+
+logChunks(readable, writeStream);
+
+
+4. Tiene un arreglo de strings los cuales deben ser filtrados por su longitud mayor a dos y a la vez convertidos a un array de enteros con la longitud de cada string, ¿cómo lo haría? Ejemplo de entrada y salida: [“hola”, “mundo”, “es”, “una”, “prueba”] => [4, 5, 3, 6]
+Respuesta: 
+Primero filtramos los strings con longitud mayor a 2, y luego usamos map para obtener la longitud de cada uno. El resultado es [4, 5, 3, 6].
+Código:
+const arr = ['hola', 'mundo', 'es', 'una', 'prueba'];
+const res = arr.filter(item => item.length > 2).map(item => item.length);
+console.log(res); // [4, 5, 3, 6]
+
+
+5. Tiene un arreglo de números, los cuales pueden ser o no repetidos, ¿cómo eliminaría los repetidos? ¿Cómo los ordenaría en forma ascendente? Ejemplo de entrada y salida: [1, 2, 5, 10, 8, 8, 1, 3, 4, 5] => [1, 2, 3, 4, 5, 8, 10]
+Respuesta: 
+Usar Set para eliminar los valores duplicados y luego sort para ordenarlos.
+Código:
+const arr = [5, 0, 1, 2, 20, 4, 1, 3, 1, 2, 3];
+const uniqueArr = [...new Set(arr)].sort((a, b) => a - b);
+console.log(uniqueArr); // [0, 1, 2, 3, 4, 5, 20]
+ 
+ 
